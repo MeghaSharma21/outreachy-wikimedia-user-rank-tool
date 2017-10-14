@@ -1,0 +1,126 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+        <title>Wikimedia User Ranking Tool</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://tools-static.wmflabs.org/cdnjs/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/jquery/3.2.1/jquery.js"></script>
+        <script src="https://tools-static.wmflabs.org/cdnjs/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+        <link rel="stylesheet" type="text/css" href={% static "css/main.css" %}>
+        <script type="text/javascript" src={% static "js/main.js" %}></script>
+</head>
+
+<body>
+
+        <div class="container">
+                <div class="row">
+                        <div class="col-md-6">
+                                <img src={% static "img/user-rank-tool.png" %} align="left">
+                        </div>
+                        <div class="col-md-6 search-box-container main-heading">
+                                <h2>Whose rank would you like to know?</h2>
+                                <div id="wrap">
+                                        <form autocomplete="on" method="post">
+                                                {% csrf_token %}
+                                                {% if isPost %}
+                                                <input id="username" value={{ userData.username }} name="username" type="text" placeholder="Enter his/her username...">
+                                                {% else %}
+                                                <input id="username" name="username" type="text" placeholder="Enter his/her username...">
+                                                {% endif %}
+                                                <input id="search_submit" value="Rechercher" type="submit">
+                                        </form>
+                                </div>
+                        </div>
+                </div>
+        </div>
+        {% if isPost %}
+        {% if resultExists %}
+        <div class="container">
+                <div class="row">
+                        <div class="slide-container" id="results">
+                                <div class="col-md-2">
+                                        <div class={{ userData.belongsToGroup }}>
+                                                <i class="fa fa-play fa-my-size" aria-hidden="true"></i>
+                                        </div>
+                                </div>
+                                <div class="col-md-6" id="graph">
+                                        <div class="wrap">
+                                                <div class="holder">
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith0Edits }}%">
+                                                                <span class="label">0 Edits</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith1Edits }}%">
+                                                                <span class="label light">1 Edit</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith2Edits }}%">
+                                                                <span class="label">2 Edits</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith3to5Edits }}%">
+                                                                <span class="label light">3-5 Edits</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith6to10Edits }}%">
+                                                                <span class="label">6-10 Edits</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith11to100Edits }}%">
+                                                                <span class="label light">11-100 Edits</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith101to1000Edits }}%"> <span class="label light">101-1000 Edits</span>
+                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWithAtleast1001Edits }}%"><span class="label"> >1000 Edits </span>
+                                                        </div>
+                                                </div>
+                                        </div>
+                                </div>
+                                <div class="col-md-4">
+                                        <h1>{{ userData.username }}</h1>
+                                        <div class="row">
+                                                <div class="col-xs-6">
+                                                        <div class="percentile"><strong>{{ userData.percentile }}</strong></div>
+                                                        <div class="below-caption">Percentile</div>
+                                                </div>
+                                                <div class="col-xs-6">
+                                                        <div class="percentile"><strong>{{ userData.userRank }}</strong></div>
+                                                        <div class="below-caption">Rank</div>
+                                                </div>
+                                        </div>
+                                        <div class="row other-info">
+                                                <div class="col-xs-12">
+                                                        <table class="table table-hover table-responsive">
+                                                          <tbody>
+                                                            <tr>
+                                                              <td>Total Edits Performed:</td>
+                                                              <td>{{ userData.noOfEditsMade }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td>Total No. of Users</td>
+                                                              <td>{{ userData.totalNoOfUsers }}</td>
+                                                            </tr>
+                                                            <tr>
+                                                              <td>Total No. of Users with atleast 1 edit</td>
+                                                              <td>{{ userData.noOfUsersWithEditCountAtleastOne }}</td>
+                                                            </tr>
+                                                          </tbody>
+                                                        </table>
+                                                </div>
+                                        </div>
+                                </div>
+                        </div>
+                </div>
+        </div>
+        {% else %}
+        <div class="container">
+                <div class="row">
+                        <div class="slide-container">
+                                <div class='panel panel-default message'> <div class='panel-body'>{{ errorMessage }}</div></div>
+                        </div>
+                </div>
+        </div>
+        {% endif %}
+        {% endif %}
+</body>
+
+</html>
