@@ -6,11 +6,12 @@ from django.shortcuts import render
 
 def userRank(request):
         userData = {}
-        resultExists = False
-        errorMessage = ''
-        isPost = False
+        queryResult = {
+                'resultExists': False,
+                'errorExists': False,
+                'errorMessage': ''
+        }
         if request.method == 'POST':
-                isPost = True
                 username = request.POST['username']
                 userData = {'username':username}
                 try:
@@ -20,7 +21,8 @@ def userRank(request):
                                 q1 = cursor.execute('SELECT count(*) FROM user WHERE user_name = %s ',[username])
                                 result = cursor.fetchone()
                                 if result[0] == 0 :
-                                        errorMessage = 'No such user exists!'
+                                        queryResult['errorExists'] = True
+                                        queryResult['errorMessage'] = 'No such user exists!'
                                 else:
                                         # finding how many users have greater editcount than that of given username
                                         q2 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount > (SELECT user_editcount FROM user WHERE user_name = %s )',[username])
@@ -30,73 +32,30 @@ def userRank(request):
                                         q3 = cursor.execute('SELECT count(*) FROM user')
                                         result = cursor.fetchone()
                                         totalNoOfUsers = result[0]
-                                        # finding total number of users who have editcount > 0
-                                        q4 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount > 0')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountAtleastOne = result[0]
                                         # finding number of edits made by the user with given username
-                                        q5 = cursor.execute('SELECT user_editcount FROM user WHERE user_name = %s',[username])
+                                        q4 = cursor.execute('SELECT user_editcount FROM user WHERE user_name = %s',[username])
                                         result = cursor.fetchone()
                                         noOfEditsMade = result[0]
-                                        # finding number of users with 0 edits
-                                        noOfUsersWithEditCountZero = totalNoOfUsers - noOfUsersWithEditCountAtleastOne
-                                        # finding number of users with 1 edit
-                                        q6 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount = 1')
+                                        # finding number of users in different groups for creating graph
+                                        # Definition of 8 groups - list of groups - (lowerlimit, upperlimit) pair - both inclusive
+                                        groups = [(0,0),(1,1),(2,2),(3,5),(6,10),(11,100),(101,1000),(1001,2147483648)]
+                                        q5 = cursor.execute('SELECT SUM(user_editcount>0), SUM(user_editcount >= %s AND user_editcount <= %s), SUM(user_editcount >= %s AND user_editcount <= %s), SUM(user_editcount >= %s AND user_editcount <= %s),  SUM(user_editcount >= %s AND user_editcount <= %s), SUM(user_editcount >= %s AND user_editcount <= %s), SUM(user_editcount >= %s AND user_editcount <= %s), SUM(user_editcount >= %s AND user_editcount <= %s), SUM(user_editcount >= %s AND user_editcount <= %s) FROM user', [ groups[0][0], groups[0][1], groups[1][0], groups[1][1], groups[2][0], groups[2][1], groups[3][0], groups[3][1], groups[4][0], groups[4][1], groups[5][0], groups[5][1], groups[6][0], groups[6][1], groups[7][0], groups[7][1]])
                                         result = cursor.fetchone()
-                                        noOfUsersWithEditCountOne = result[0]
-                                        # finding number of users with 2 edits
-                                        q7 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount = 2')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountTwo = result[0]
-                                        # finding number of users with 3-5 edits
-                                        q8 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount BETWEEN 3 AND 5')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountBetween3and5 = result[0]
-                                        # finding number of users with 6-10 edits
-                                        q9 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount BETWEEN 6 AND 10')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountBetween6and10 = result[0]
-                                        # finding number of users with 11-100 edits
-                                        q10 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount BETWEEN 11 AND 100')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountBetween11and100 = result[0]
-                                        # finding number of users with 101-1000 edits
-                                        q11 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount BETWEEN 101 AND 1000')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountBetween101and1000 = result[0]
-                                        # finding number of users with >1000 edits
-                                        q12 = cursor.execute('SELECT count(*) FROM user WHERE user_editcount > 1000')
-                                        result = cursor.fetchone()
-                                        noOfUsersWithEditCountAtleast1001 = result[0]
+                                        noOfUsersWithEditCountAtleastOne = result[0]
+                                        # noOfUsersInGroup1 is result[1], noOfUsersInGroup2 is result[2], noOfUsersInGroup3 is result[3], noOfUsersInGroup4 is result[4], noOfUsersInGroup5 is result[5], noOfUsersInGroup6 is result[6], noOfUsersInGroup7 is result[7], noOfUsersInGroup8 is result[8]
                                         # calculating percentile of the user
-                                        percentile = 100 - (math.ceil(userRank/totalNoOfUsers)*100)
+                                        percentile = 100 - 100*round(userRank/totalNoOfUsers,4)
                                         # calculating percentage of users lying in different ranges
-                                        percentageOfUsersWith0Edits = 100*round(noOfUsersWithEditCountZero/totalNoOfUsers,2)
-                                        percentageOfUsersWith1Edits = 100*round(noOfUsersWithEditCountOne/totalNoOfUsers,2)
-                                        percentageOfUsersWith2Edits = 100*round(noOfUsersWithEditCountTwo/totalNoOfUsers,2)
-                                        percentageOfUsersWith3to5Edits = 100*round(noOfUsersWithEditCountBetween3and5/totalNoOfUsers,2)
-                                        percentageOfUsersWith6to10Edits = 100*round(noOfUsersWithEditCountBetween6and10/totalNoOfUsers,2)
-                                        percentageOfUsersWith11to100Edits = 100*round(noOfUsersWithEditCountBetween11and100/totalNoOfUsers,2)
-                                        percentageOfUsersWith101to1000Edits = 100*round(noOfUsersWithEditCountBetween101and1000/totalNoOfUsers,2)
-                                        percentageOfUsersWithAtleast1001Edits = 100*round(noOfUsersWithEditCountAtleast1001/totalNoOfUsers,2)
+                                        # percentageOfUsersInGroup[i] contains percentage of users in ith group 
+                                        percentageOfUsersInGroup = [0]*(len(groups)+1)
+                                        for i in range(1, len(percentageOfUsersInGroup)):
+                                                percentageOfUsersInGroup[i] = round(100*(result[i]/totalNoOfUsers),2)
                                         # checking which group user with given username belongs to
                                         belongsToGroup = 'group-1';
-                                        if noOfEditsMade==0:
-                                                belongsToGroup='group-1'
-                                        if noOfEditsMade==1:
-                                                belongsToGroup='group-2'
-                                        if noOfEditsMade==2:
-                                                belongsToGroup='group-3'
-                                        if noOfEditsMade>=3 and noOfEditsMade<=5:
-                                                belongsToGroup='group-4'
-                                        if noOfEditsMade>=6 and noOfEditsMade<=10:
-                                                belongsToGroup='group-5'
-                                        if noOfEditsMade>=11 and noOfEditsMade<=100:
-                                                belongsToGroup='group-6'
-                                        if noOfEditsMade>=101 and noOfEditsMade<=1000:
-                                                belongsToGroup='group-7'
-                                        if noOfEditsMade>=1001:
-                                                belongsToGroup='group-8'                                                
+                                        for i in range(len(groups)):
+                                                if noOfEditsMade>=groups[i][0] and noOfEditsMade<=groups[i][1]:
+                                                        belongsToGroup='group-'+str(i+1)
+                                                        break                                   
                                         userData = {
                                                 'username': username,
                                                 'userRank': userRank,
@@ -104,20 +63,14 @@ def userRank(request):
                                                 'noOfEditsMade': noOfEditsMade,
                                                 'totalNoOfUsers': totalNoOfUsers,
                                                 'noOfUsersWithEditCountAtleastOne': noOfUsersWithEditCountAtleastOne,
-                                                'percentageOfUsersWith0Edits': percentageOfUsersWith0Edits,
-                                                'percentageOfUsersWith1Edits': percentageOfUsersWith1Edits,
-                                                'percentageOfUsersWith2Edits': percentageOfUsersWith2Edits,
-                                                'percentageOfUsersWith3to5Edits': percentageOfUsersWith3to5Edits,
-                                                'percentageOfUsersWith6to10Edits': percentageOfUsersWith6to10Edits,
-                                                'percentageOfUsersWith11to100Edits': percentageOfUsersWith11to100Edits,
-                                                'percentageOfUsersWith101to1000Edits': percentageOfUsersWith101to1000Edits,
-                                                'percentageOfUsersWithAtleast1001Edits':percentageOfUsersWithAtleast1001Edits,                          
+                                                'percentageOfUsersInGroup': percentageOfUsersInGroup,                                                   
                                                 'belongsToGroup':belongsToGroup
                                         }
-                                        resultExists = True
-                except Error as e:
-                        errorMessage = 'Error fetching results from the Database. If the error persists, contact Megha : meghasharma4910@gmail.com'
+                                        queryResult['resultExists'] = True
+                except:
+                        queryResult['errorExists'] = True
+                        queryResult['errorMessage'] = 'Error fetching results from the Database. If the error persists, contact Megha : meghasharma4910@gmail.com'
                 finally:
                         cursor.close()
                         conn.close()
-        return render(request, 'user_rank.html', {'isPost':isPost, 'resultExists': resultExists, 'errorMessage': errorMessage, 'userData': userData})
+        return render(request, 'user_rank.html', {'result': queryResult, 'userData': userData})

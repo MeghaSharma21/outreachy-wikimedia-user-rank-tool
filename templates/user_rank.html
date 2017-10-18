@@ -26,52 +26,32 @@
                                 <div id="wrap">
                                         <form autocomplete="on" method="post">
                                                 {% csrf_token %}
-                                                {% if isPost %}
-                                                <input id="username" value={{ userData.username }} name="username" type="text" placeholder="Enter his/her username...">
-                                                {% else %}
-                                                <input id="username" name="username" type="text" placeholder="Enter his/her username...">
-                                                {% endif %}
+                                                <input id="username" {% if userData.username %} value="{{ userData.username }}" {% endif %} name="username" type="text" placeholder="Enter username..">
                                                 <input id="search_submit" value="Rechercher" type="submit">
                                         </form>
                                 </div>
                         </div>
                 </div>
         </div>
-        {% if isPost %}
-        {% if resultExists %}
+
+        {% if result.resultExists %}
         <div class="container">
                 <div class="row">
                         <div class="slide-container" id="results">
                                 <div class="col-md-2">
-                                        <div class={{ userData.belongsToGroup }}>
-                                                <i class="fa fa-play fa-my-size" aria-hidden="true"></i>
-                                        </div>
+                                        <div class={{ userData.belongsToGroup }}><i class="fa fa-play fa-my-size" aria-hidden="true"></i></div>
                                 </div>
                                 <div class="col-md-6" id="graph">
                                         <div class="wrap">
                                                 <div class="holder">
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith0Edits }}%">
-                                                                <span class="label">0 Edits</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith1Edits }}%">
-                                                                <span class="label light">1 Edit</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith2Edits }}%">
-                                                                <span class="label">2 Edits</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith3to5Edits }}%">
-                                                                <span class="label light">3-5 Edits</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith6to10Edits }}%">
-                                                                <span class="label">6-10 Edits</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith11to100Edits }}%">
-                                                                <span class="label light">11-100 Edits</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWith101to1000Edits }}%"> <span class="label light">101-1000 Edits</span>
-                                                        </div>
-                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersWithAtleast1001Edits }}%"><span class="label"> >1000 Edits </span>
-                                                        </div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.1 }}%" style="width: {{ userData.percentageOfUsersInGroup.1 }}%"><span class="label">0 Edits</span><span class="count">{{ userData.percentageOfUsersInGroup.1 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.2 }}%" style="width: {{ userData.percentageOfUsersInGroup.2 }}%"><span class="label light">1 Edit</span><span class="count">{{ userData.percentageOfUsersInGroup.2 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.3 }}%" style="width: {{ userData.percentageOfUsersInGroup.3 }}%"><span class="label">2 Edits</span><span class="count">{{ userData.percentageOfUsersInGroup.3 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.4 }}%" style="width: {{ userData.percentageOfUsersInGroup.4 }}%"><span class="label light">3-5 Edits</span><span class="count">{{ userData.percentageOfUsersInGroup.4 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.5 }}%" style="width: {{ userData.percentageOfUsersInGroup.5 }}%"><span class="label">6-10 Edits</span><span class="count">{{ userData.percentageOfUsersInGroup.5 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.6 }}%" style="width: {{ userData.percentageOfUsersInGroup.6 }}%"><span class="label light">11-100 Edits</span><span class="count">{{ userData.percentageOfUsersInGroup.6 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.7 }}%" style="width: {{ userData.percentageOfUsersInGroup.7 }}%"><span class="label">101-1000 Edits</span><span class="count">{{ userData.percentageOfUsersInGroup.7 }}%</span></div>
+                                                        <div class="bar cf" data-percent="{{ userData.percentageOfUsersInGroup.8 }}%" style="width: {{ userData.percentageOfUsersInGroup.8 }}%"><span class="label light"> >1000 Edits </span><span class="count">{{ userData.percentageOfUsersInGroup.8 }}%</span></div>
                                                 </div>
                                         </div>
                                 </div>
@@ -111,15 +91,15 @@
                         </div>
                 </div>
         </div>
-        {% else %}
+        {% endif %}
+        {% if result.errorExists %}
         <div class="container">
                 <div class="row">
                         <div class="slide-container">
-                                <div class='panel panel-default message'> <div class='panel-body'>{{ errorMessage }}</div></div>
+                                <div class='panel panel-default message'> <div class='panel-body'>{{ result.errorMessage }}</div></div>
                         </div>
                 </div>
         </div>
-        {% endif %}
         {% endif %}
 </body>
 

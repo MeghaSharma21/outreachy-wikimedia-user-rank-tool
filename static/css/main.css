@@ -125,13 +125,12 @@ ul li:before {
 
 .bar {
   background: #EE5487;
-  width: 0;
   margin: .25em 0;
   color: gray;
   position: relative;
-  transition: width 2s, background .2s;
   -webkit-transform: translate3d(0, 0, 0);
   clear: both;
+  border-radius: 1.25em;
 }
 .bar:nth-of-type(2n) {
   background: #f382a8;
@@ -147,6 +146,7 @@ ul li:before {
   font-weight: bold;
   font-family: "Lato";
   left: -10em;
+  border-radius: 1.25em;
 }
 .bar .label.light {
   background: #1a1a1a;
@@ -154,7 +154,7 @@ ul li:before {
 
 .count {
   position: absolute;
-  right: -2.25em;
+  right: -4em;
   top: .75em;
   padding: .15em;
   font-size: .75em;
